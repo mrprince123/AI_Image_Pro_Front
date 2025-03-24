@@ -1,7 +1,28 @@
-import { ImageDown, Search, X } from "lucide-react";
+import { ImageDown, Search} from "lucide-react";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../App";
 import axios from "axios";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../components/ui/alert-dialog";
+import { NavLink } from "react-router-dom";
 
 interface Image {
   id: string;
@@ -9,6 +30,7 @@ interface Image {
   image_url: string;
   image_alt: string;
   sub_category_id: string;
+  size: string; // LANDSCAPE , PORTRAIT
 }
 
 interface Category {
@@ -30,24 +52,13 @@ const Home = () => {
   const [searchImage, setSearchImage] = useState<string>("");
   const [category, setCategory] = useState<Category[]>([]);
   const [subCategory, setSubCategory] = useState<SubCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedName, setSelectedName] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Open Modal with Image
-  const openModal = (image_url: string, image_name: string) => {
-    setSelectedImage(image_url);
-    setSelectedName(image_name);
-    setIsOpen(true);
-  };
-
-  // Close Modal
-  const closeModal = () => {
-    setIsOpen(false);
-    setSelectedImage(null);
-    setSelectedName(null);
-  };
+  useEffect(() => {
+    getAllCategory();
+    getAllImages();
+    getAllSubCategory("1");
+  }, []);
 
   // Fetch all Category
   const getAllCategory = async () => {
@@ -100,27 +111,58 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    getAllCategory();
-    getAllImages();
-    getAllSubCategory("1");
-  }, []);
-
-  // Filter Search
+  // Filter based on the Search
   const handleImageFilter = () => {
     try {
       const filterValue = image.filter((item) =>
         item.image_name.toLowerCase().includes(searchImage.toLowerCase())
       );
-      // return filterValue;
-      console.log("Filter vAlue ", filterValue);
       setfilterImage(filterValue);
+    } catch (error) {}
+  };
+
+  // Filter Based on the Category
+  const handleCategoryFilter = (categoryId: any) => {
+    try {
+      const subCategoryIds = subCategory
+        .filter((sub) => sub.category_id == categoryId)
+        .map((sub) => sub.id);
+
+      const filterImages = image.filter((img) =>
+        subCategoryIds.includes(img.sub_category_id)
+      );
+
+      setfilterImage(filterImages);
+    } catch (error) {}
+  };
+
+  // Run filter logic AFTER subCategory is updated
+  useEffect(() => {
+    if (selectedCategoryId) {
+      handleCategoryFilter(selectedCategoryId);
+    }
+  }, [subCategory]); // Watch for subCategory updates
+
+  const handleCategoryClick = (categoryId: any) => {
+    setSelectedCategoryId(categoryId); // Store selected category
+    getAllSubCategory(categoryId); // This updates subCategory state
+  };
+
+  const handleSubCategoryFilter = (subCatId: any) => {
+    try {
+      console.log("Working this Funciton");
+      console.log("Cat Id ", subCatId);
+      const filterImages = image.filter(
+        (img) => Number(img.sub_category_id) === Number(subCatId)
+      );
+      setfilterImage(filterImages);
     } catch (error) {}
   };
 
   return (
     <div>
-      <div className="relative w-full min-h-[60vh]">
+      {/* Hero Section  */}
+      <div className="relative w-full min-h-[50vh] md:min-h-[60vh]">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -131,129 +173,127 @@ const Home = () => {
         ></div>
 
         {/* Black Shadow Overlay */}
-        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="absolute inset-0 bg-black opacity-30"></div>
 
         {/* Content */}
         <div className="relative z-10">
-          <header className="w-3/4 mx-auto flex items-center justify-between p-4 text-white">
-            <h2 className="text-lg italic font-medium ">AI Image Pro</h2>
-            <div className="flex items-center gap-4">
+          <header className="w-11/12 md:w-3/4 mx-auto flex flex-col md:flex-row items-center justify-between p-4 text-white">
+            <h2 className="text-lg italic font-medium">AI Image Pro</h2>
+            <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
               <h4 className="text-white font-medium text-lg">About</h4>
-              <h4 className="text-white font-medium text-lg">Category</h4>
-              <button className="bg-white text-md  font-medium text-gray-600 p-2 rounded-lg">
-                Admin
-              </button>
+              <h4 className="text-white font-medium text-lg">Documentation</h4>
+              <Button variant="secondary">
+                <NavLink to="/admin">Admin</NavLink>
+              </Button>
             </div>
           </header>
 
           {/* Search Box */}
-          <div className="mt-30 w-1/3 mx-auto">
-            <h3 className="text-3xl text-white font-semibold mb-5 text-center">
-              The best free stock and AI photos, royalty free images shared by
+          <div className="mt-10 w-11/12 md:w-1/3 mx-auto">
+            <h3 className="text-xl md:text-3xl text-white font-semibold mb-5 text-center">
+              The best free stock, AI photos, royalty-free images shared by
               admin.
             </h3>
-            <div className="bg-white flex gap-2 items-center  mx-auto p-3 rounded-lg ">
-              <div className="flex gap-2 items-center bg-gray-200 p-4 rounded-lg">
+            <div className="bg-white flex gap-2 items-center mx-auto p-2 rounded-lg w-full">
+              <Button className="flex gap-2 items-center bg-gray-100 p-4 md:p-6 rounded-lg">
                 <ImageDown className="text-gray-400" />
                 <h2 className="text-gray-700 font-medium">Image</h2>
-              </div>
-              <input
-                className="p-4 bg-gray-200 w-full rounded-lg"
+              </Button>
+              <Input
+                className="p-4 md:p-6 bg-gray-100 border-0 w-full"
                 type="text"
                 onChange={(e) => setSearchImage(e.target.value)}
                 placeholder="Search for free Photo"
               />
-              <button
+              <Button
                 onClick={() => handleImageFilter()}
-                className="bg-gray-200 p-4 rounded-lg"
+                className="bg-gray-50 p-4 md:p-6 rounded-lg"
               >
-                <Search />
-              </button>
+                <Search className="text-gray-600" />
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="w-3/4 mx-auto mt-20 mb-20">
-        {/* Category  */}
-        <div className="flex gap-4 items-center justify-center m-5">
+      {/* Main Content */}
+      <div className="w-11/12 md:w-4/5 mx-auto mt-10 md:mt-20 mb-10 md:mb-20">
+        {/* Category */}
+        <div className="flex flex-wrap gap-4 items-center justify-center m-5">
           {category.map((item) => (
             <button
-              onClick={() => getAllSubCategory(item.id)}
+              onClick={() => handleCategoryClick(item.id)}
               key={item.id}
-              className="text-lg text-gray-700 px-4 py-2 rounded-full font-medium hover:bg-gray-100"
+              className="text-md md:text-lg text-gray-700 px-4 py-2 rounded-full font-medium hover:bg-gray-100"
             >
               {item.category_name}
             </button>
           ))}
         </div>
-        {/* Sub Category  */}
-        <div className="flex justify-between mt-10 mb-5">
-          <h4 className="text-2xl font-medium">
+
+        {/* Sub Category & Filter */}
+        <div className="flex flex-col md:flex-row justify-between items-center mt-10 mb-5 gap-4">
+          <h4 className="text-xl md:text-2xl font-medium text-center md:text-left">
             {searchImage ? searchImage : "Free AI Generate Stock Photos"}
           </h4>
-          <select
-            name=""
-            id=""
-            className="border border-gray-200 p-2 rounded-lg"
-          >
-            {subCategory.map((item) => (
-              <option key={item.id} value="">
-                {item.sub_category_name}
-              </option>
+
+          <Select onValueChange={handleSubCategoryFilter}>
+            <SelectTrigger className="w-full md:w-auto">
+              <SelectValue placeholder="Sub category" />
+            </SelectTrigger>
+            <SelectContent className="w-full md:w-auto">
+              {subCategory.map((item) => (
+                <SelectItem key={item.id} value={item.id}>
+                  {item.sub_category_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Show the Images Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
+          {filterImage
+            .slice()
+            .sort(() => Math.random() - 0.5)
+            .map((image) => (
+              <div
+                key={image.id}
+                className={`relative rounded-xl overflow-hidden ${
+                  image.size === "PORTRAIT"
+                    ? "col-span-1 row-span-2"
+                    : "col-span-1 row-span-1"
+                }`}
+              >
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <img
+                      src={image.image_url}
+                      alt={image.image_alt}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{image.image_name}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <img src={image.image_url} alt={image.image_alt} />
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction>
+                        <a target="_blank" href={image.image_url}>
+                          Download
+                        </a>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             ))}
-          </select>
         </div>
-
-        {/* Show the Images  */}
-        <div className="grid grid-cols-3 gap-6 mx-auto mt-4">
-          {filterImage.map((image, index) => (
-            <div key={index} className={`relative rounded-xl overflow-hidden`}>
-              <img
-                onClick={() =>
-                  openModal(image.image_url, image.image_name || "Image")
-                }
-                src={image.image_url}
-                alt={image.image_alt}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Dialog Box (Modal) */}
-        {isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg w-1/2 shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">{selectedName}</h3>
-                <button
-                  onClick={closeModal}
-                  className="font-medium p-2 rounded-lg"
-                >
-                  <X />
-                </button>
-              </div>
-              <div className="flex items-center justify-center">
-                <img
-                  className="max-w-full max-h-[70vh] object-contain"
-                  src={selectedImage!}
-                  alt="Full Image"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <a
-                  href={selectedImage!}
-                  download
-                  className="block mt-4 p-2 font-medium bg-black text-white text-center py-2 rounded-lg"
-                >
-                  Download
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { ImageDown, Search } from "lucide-react";
+import { Download, ImageDown, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../App";
 import axios from "axios";
@@ -24,6 +24,7 @@ import {
 } from "../components/ui/alert-dialog";
 import { NavLink } from "react-router-dom";
 import { Skeleton } from "../components/ui/skeleton";
+import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 
 interface Image {
   id: string;
@@ -56,6 +57,7 @@ const Home = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const [loading, setLoading] = useState(true);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     getAllCategory();
@@ -149,10 +151,12 @@ const Home = () => {
   }, [subCategory]); // Watch for subCategory updates
 
   const handleCategoryClick = (categoryId: any) => {
+    setActiveCategoryId(categoryId); // Mark the clicked category as active
     setSelectedCategoryId(categoryId); // Store selected category
     getAllSubCategory(categoryId); // This updates subCategory state
   };
 
+  // Handle Sub Category Filter
   const handleSubCategoryFilter = (subCatId: any) => {
     try {
       console.log("Working this Funciton");
@@ -162,6 +166,32 @@ const Home = () => {
       );
       setfilterImage(filterImages);
     } catch (error) {}
+  };
+
+  // Handle Download
+  const handleImageDownload = async (imageUrl: string, imageName: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Create a link element
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = imageName || "ai-image-pro-download"; // Set the filename
+
+      // Append to DOM, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Release the blob URL
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
   };
 
   return (
@@ -182,8 +212,16 @@ const Home = () => {
 
         {/* Content */}
         <div className="relative z-10">
-          <header className="w-full md:w-4/5 mx-auto flex flex-col md:flex-row items-center justify-between p-4 text-white">
-            <h2 className="text-lg italic font-medium">AI Image Pro</h2>
+          <header className="w-full md:w-4/5 mx-auto flex flex-wrap items-center justify-between p-4 text-white">
+            {/* <h2 className="text-lg italic font-medium">AI Image Pro</h2> */}
+
+            <NavLink to="/" className="flex items-center gap-2 font-medium">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <ImageDown className="size-4" />
+              </div>
+              AI Wallpaper Image Pro
+            </NavLink>
+
             <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
               {/* <h4 className="text-white font-medium text-lg">About</h4> */}
               {/* <h4 className="text-white font-medium text-lg">Documentation</h4> */}
@@ -224,17 +262,25 @@ const Home = () => {
       {/* Main Content */}
       <div className="w-11/12 md:w-4/5 mx-auto mt-10 md:mt-20 mb-10 md:mb-20">
         {/* Category */}
-        <div className="flex flex-wrap gap-4 items-center justify-center m-5">
-          {category.map((item) => (
-            <button
-              onClick={() => handleCategoryClick(item.id)}
-              key={item.id}
-              className="text-md md:text-lg text-gray-700 px-4 py-2 rounded-full font-medium hover:bg-gray-100"
-            >
-              {item.category_name}
-            </button>
-          ))}
-        </div>
+        <ScrollArea>
+          <div className="flex gap-4 items-center justify-center overflow-x-scroll scrollbar-hide w-full">
+            {category.map((item) => (
+              <button
+                onClick={() => handleCategoryClick(item.id)}
+                key={item.id}
+                className={`text-md md:text-lg px-4 py-2 rounded-full cursor-pointer font-medium transition-all 
+                ${
+                  activeCategoryId === item.id
+                    ? "bg-black text-white"
+                    : "text-gray-700 bg-gray-50 hover:bg-gray-100"
+                }`}
+              >
+                {item.category_name}
+              </button>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
 
         {/* Sub Category & Filter */}
         <div className="flex flex-col md:flex-row justify-between items-center mt-10 mb-5 gap-4">
@@ -258,14 +304,14 @@ const Home = () => {
 
         {/* Show the Images Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
-            {Array.from({ length: 6 }).map((_, index) => (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mx-auto mt-4">
+            {Array.from({ length: 20 }).map((_, index) => (
               <div
                 key={index}
                 className={`relative rounded-xl overflow-hidden ${
                   index % 3 === 0
-                    ? "col-span-1 row-span-2 h-[300px]"
-                    : "col-span-1 row-span-1 h-[150px]"
+                    ? "col-span-1 row-span-2 h-[600px]"
+                    : "col-span-1 row-span-1 h-[300px]"
                 }`}
               >
                 <Skeleton className="w-full h-full rounded-xl" />
@@ -273,14 +319,14 @@ const Home = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mx-auto mt-4">
             {filterImage
               .slice()
               .sort(() => Math.random() - 0.5)
               .map((image) => (
                 <div
                   key={image.id}
-                  className={`relative rounded-xl overflow-hidden ${
+                  className={`relative rounded-xl overflow-hidden cursor-pointer ${
                     image.size === "PORTRAIT"
                       ? "col-span-1 row-span-2"
                       : "col-span-1 row-span-1"
@@ -295,19 +341,39 @@ const Home = () => {
                         loading="lazy"
                       />
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="p-4">
                       <AlertDialogHeader>
-                        <AlertDialogTitle>{image.image_name}</AlertDialogTitle>
+                        <div className="flex justify-between">
+                          <AlertDialogTitle>
+                            {image.image_name}
+                          </AlertDialogTitle>
+                          <AlertDialogCancel>
+                            <X />
+                          </AlertDialogCancel>
+                        </div>
+
                         <AlertDialogDescription>
-                          <img src={image.image_url} alt={image.image_alt} />
+                          <img
+                            src={image.image_url}
+                            alt={image.image_alt}
+                            className="rounded-lg"
+                          />
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction>
-                          <a target="_blank" href={image.image_url}>
+                          <button
+                            onClick={() =>
+                              handleImageDownload(
+                                image.image_url,
+                                image.image_name
+                              )
+                            }
+                            className="flex gap-2  items-center"
+                          >
+                            <Download />
                             Download
-                          </a>
+                          </button>
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

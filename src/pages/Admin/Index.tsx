@@ -11,6 +11,11 @@ import AllImages from "./AllImages";
 import AddCategory from "./AddCategory";
 import AddSubCategory from "./AddSubCategory";
 import { NavLink } from "react-router-dom";
+import { baseUrl } from "../../App";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { logout } from "../../Redux/AuthSlice";
+import toast, { Toaster } from "react-hot-toast";
 
 interface User {
   id: number;
@@ -25,6 +30,8 @@ const Index = () => {
 
   const [mobile, setMobile] = useState(false);
   const [profile, setProfile] = useState(false);
+
+  const dispatch = useDispatch();
 
   // Get the User Details
   const [user] = useState<User | null>(() => {
@@ -41,6 +48,21 @@ const Index = () => {
   };
 
   // Write Logout Function
+  const handleLogout = async () => {
+    try {
+      const url = `${baseUrl}/auth/logout`;
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      dispatch(logout());
+      toast.success(response.data.message);
+      console.log("Logout Response ", response);
+    } catch (error) {}
+  };
 
   return (
     <div className="antialiased bg-gray-50 dark:bg-gray-900">
@@ -55,14 +77,11 @@ const Index = () => {
 
               <span className="sr-only">Toggle sidebar</span>
             </button>
-            <NavLink
-              to="/admin"
-              className="flex items-center justify-between mr-4 gap-2"
-            >
-              <ImageDown />
-              <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                AI Image Pro
-              </span>
+            <NavLink to="/" className="flex items-center gap-2 font-medium">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <ImageDown className="size-4" />
+              </div>
+              AI Wallpaper Image Pro
             </NavLink>
           </div>
           <div className="flex items-center lg:order-2">
@@ -98,12 +117,12 @@ const Index = () => {
                   aria-labelledby="dropdown"
                 >
                   <li>
-                    <a
-                      href="#"
+                    <button
+                      onClick={() => handleLogout()}
                       className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                     >
                       Sign out
-                    </a>
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -250,6 +269,7 @@ const Index = () => {
         {selectedTab === "addCategory" && <AddCategory />}
         {selectedTab === "addSubCategory" && <AddSubCategory />}
       </main>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };

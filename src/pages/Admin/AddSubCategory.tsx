@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Category {
   id: number;
@@ -81,6 +82,7 @@ const AddSubCategory = () => {
       );
 
       console.log("Response ", response);
+      toast.success(response.data.message);
     } catch (error) {
       console.log("Error ", error);
     }
@@ -107,6 +109,21 @@ const AddSubCategory = () => {
     getAllCategory();
     getAllSubCategory();
   }, []);
+
+  // Delete Sub Category
+  const deleteSubCategory = async (id: any) => {
+    try {
+      const url = `${baseUrl}/subCategory/delete/${id}`;
+      const response = await axios.delete(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log("Del Response ", response);
+      toast.success(response.data.message);
+    } catch (error) {}
+  };
 
   return (
     <div>
@@ -198,15 +215,21 @@ const AddSubCategory = () => {
                   {item.sub_category_name}
                 </TableCell>
                 <TableCell>{item.sub_category_description}</TableCell>
-                <TableCell>{item.category_id}</TableCell>
                 <TableCell>
-                  <Trash2 />
+                  {category.find((cat) => cat.id === item.category_id)
+                    ?.category_name || "Unknown"}
+                </TableCell>
+                <TableCell>
+                  <button onClick={() => deleteSubCategory(item.id)}>
+                    <Trash2 />
+                  </button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };

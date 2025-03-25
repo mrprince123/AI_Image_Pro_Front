@@ -10,6 +10,8 @@ import {
 } from "../../components/ui/select";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import toast, { Toaster } from "react-hot-toast";
+
 
 interface Category {
   id: string;
@@ -107,6 +109,7 @@ const AddImage = () => {
         withCredentials: true,
       });
       console.log("Response ", response);
+      toast.success(response.data.message);
     } catch (error) {
       console.log("Error while adding the image", error);
     }
@@ -236,6 +239,8 @@ const AddImage = () => {
         />
       </div>
       <Button type="submit">Upload Image</Button>
+            <Toaster position="top-right" reverseOrder={false} />
+      
     </form>
   );
 };

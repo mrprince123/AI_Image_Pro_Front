@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import toast, { Toaster } from "react-hot-toast";
 import {
   Table,
   TableBody,
@@ -43,6 +44,7 @@ const AddCategory = () => {
       );
 
       console.log("Response ", response);
+      toast.success(response.data.message);
     } catch (error) {
       console.log("Error ", error);
     }
@@ -69,6 +71,21 @@ const AddCategory = () => {
   useEffect(() => {
     getAllCategory();
   }, []);
+
+  // Delete Category
+  const deleteCategory = async (id: any) => {
+    try {
+      const url = `${baseUrl}/category/delete/${id}`;
+      const response = await axios.delete(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log("Del Response ", response);
+      toast.success(response.data.message);
+    } catch (error) {}
+  };
 
   return (
     <div>
@@ -135,13 +152,16 @@ const AddCategory = () => {
                 </TableCell>
                 <TableCell>{item.category_description}</TableCell>
                 <TableCell>
-                  <Trash2 />
+                  <button onClick={() => deleteCategory(item.id)}>
+                    <Trash2 />
+                  </button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };

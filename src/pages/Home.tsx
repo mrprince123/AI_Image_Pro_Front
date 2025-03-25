@@ -1,4 +1,4 @@
-import { ImageDown, Search} from "lucide-react";
+import { ImageDown, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../App";
 import axios from "axios";
@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
 import { NavLink } from "react-router-dom";
+import { Skeleton } from "../components/ui/skeleton";
 
 interface Image {
   id: string;
@@ -53,6 +54,8 @@ const Home = () => {
   const [category, setCategory] = useState<Category[]>([]);
   const [subCategory, setSubCategory] = useState<SubCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getAllCategory();
@@ -108,6 +111,8 @@ const Home = () => {
       setfilterImage(response.data.data);
     } catch (error) {
       console.log("Error while Image Response ", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,11 +182,11 @@ const Home = () => {
 
         {/* Content */}
         <div className="relative z-10">
-          <header className="w-11/12 md:w-3/4 mx-auto flex flex-col md:flex-row items-center justify-between p-4 text-white">
+          <header className="w-full md:w-4/5 mx-auto flex flex-col md:flex-row items-center justify-between p-4 text-white">
             <h2 className="text-lg italic font-medium">AI Image Pro</h2>
             <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
-              <h4 className="text-white font-medium text-lg">About</h4>
-              <h4 className="text-white font-medium text-lg">Documentation</h4>
+              {/* <h4 className="text-white font-medium text-lg">About</h4> */}
+              {/* <h4 className="text-white font-medium text-lg">Documentation</h4> */}
               <Button variant="secondary">
                 <NavLink to="/admin">Admin</NavLink>
               </Button>
@@ -252,48 +257,65 @@ const Home = () => {
         </div>
 
         {/* Show the Images Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
-          {filterImage
-            .slice()
-            .sort(() => Math.random() - 0.5)
-            .map((image) => (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
+            {Array.from({ length: 6 }).map((_, index) => (
               <div
-                key={image.id}
+                key={index}
                 className={`relative rounded-xl overflow-hidden ${
-                  image.size === "PORTRAIT"
-                    ? "col-span-1 row-span-2"
-                    : "col-span-1 row-span-1"
+                  index % 3 === 0
+                    ? "col-span-1 row-span-2 h-[300px]"
+                    : "col-span-1 row-span-1 h-[150px]"
                 }`}
               >
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <img
-                      src={image.image_url}
-                      alt={image.image_alt}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{image.image_name}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <img src={image.image_url} alt={image.image_alt} />
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>
-                        <a target="_blank" href={image.image_url}>
-                          Download
-                        </a>
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Skeleton className="w-full h-full rounded-xl" />
               </div>
             ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-auto mt-4">
+            {filterImage
+              .slice()
+              .sort(() => Math.random() - 0.5)
+              .map((image) => (
+                <div
+                  key={image.id}
+                  className={`relative rounded-xl overflow-hidden ${
+                    image.size === "PORTRAIT"
+                      ? "col-span-1 row-span-2"
+                      : "col-span-1 row-span-1"
+                  }`}
+                >
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <img
+                        src={image.image_url}
+                        alt={image.image_alt}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{image.image_name}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <img src={image.image_url} alt={image.image_alt} />
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction>
+                          <a target="_blank" href={image.image_url}>
+                            Download
+                          </a>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Download, ImageDown, Search, X } from "lucide-react";
+import { Download, ImageDown, Moon, Search, SunMoon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../App";
 import axios from "axios";
@@ -25,6 +25,7 @@ import {
 import { NavLink } from "react-router-dom";
 import { Skeleton } from "../components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
+import { useQuery } from "@tanstack/react-query";
 
 interface Image {
   id: string;
@@ -48,22 +49,51 @@ interface SubCategory {
   category_id: string;
 }
 
+// Fetching all images Outside
+const fetchImages = async () => {
+  const url = `${baseUrl}/image/get`;
+  const { data } = await axios.get(url, {
+    withCredentials: true,
+  });
+  return data.data;
+};
+
 const Home = () => {
-  const [image, setImage] = useState<Image[]>([]);
-  const [filterImage, setfilterImage] = useState<Image[]>([]);
+  const [theme, setTheme] = useState(
+    localStorage.getItem("aiImageProTheme") || "light"
+  );
+
+  const [filterImage, setFilterImage] = useState<Image[]>([]);
   const [searchImage, setSearchImage] = useState<string>("");
   const [category, setCategory] = useState<Category[]>([]);
   const [subCategory, setSubCategory] = useState<SubCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-
-  const [loading, setLoading] = useState(true);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+
+  // Using the React Query
+  const { data: images, isLoading: imageLoading } = useQuery({
+    queryKey: ["images"],
+    queryFn: fetchImages,
+  });
 
   useEffect(() => {
     getAllCategory();
-    getAllImages();
     getAllSubCategory("1");
   }, []);
+
+  useEffect(() => {
+    if (images) setFilterImage(images);
+  }, [images]);
+
+  // Handle Image Filter
+  const handleImageFilter = () => {
+    if (images) {
+      const filterValue = images.filter((item: any) =>
+        item.image_name.toLowerCase().includes(searchImage.toLowerCase())
+      );
+      setFilterImage(filterValue);
+    }
+  };
 
   // Fetch all Category
   const getAllCategory = async () => {
@@ -100,34 +130,6 @@ const Home = () => {
     }
   };
 
-  // Fetch all Images
-  const getAllImages = async () => {
-    try {
-      const url = `${baseUrl}/image/get`;
-      const response = await axios.get(url, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
-      console.log("Image Response ", response);
-      setImage(response.data.data);
-      setfilterImage(response.data.data);
-    } catch (error) {
-      console.log("Error while Image Response ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter based on the Search
-  const handleImageFilter = () => {
-    try {
-      const filterValue = image.filter((item) =>
-        item.image_name.toLowerCase().includes(searchImage.toLowerCase())
-      );
-      setfilterImage(filterValue);
-    } catch (error) {}
-  };
-
   // Filter Based on the Category
   const handleCategoryFilter = (categoryId: any) => {
     try {
@@ -135,21 +137,22 @@ const Home = () => {
         .filter((sub) => sub.category_id == categoryId)
         .map((sub) => sub.id);
 
-      const filterImages = image.filter((img) =>
+      const filterImages = images.filter((img: any) =>
         subCategoryIds.includes(img.sub_category_id)
       );
 
-      setfilterImage(filterImages);
+      setFilterImage(filterImages);
     } catch (error) {}
   };
 
-  // Run filter logic AFTER subCategory is updated
+  // Run filter logic after subCategory is updated
   useEffect(() => {
     if (selectedCategoryId) {
       handleCategoryFilter(selectedCategoryId);
     }
-  }, [subCategory]); // Watch for subCategory updates
+  }, [subCategory]);
 
+  // Handle Category Click
   const handleCategoryClick = (categoryId: any) => {
     setActiveCategoryId(categoryId); // Mark the clicked category as active
     setSelectedCategoryId(categoryId); // Store selected category
@@ -161,10 +164,10 @@ const Home = () => {
     try {
       console.log("Working this Funciton");
       console.log("Cat Id ", subCatId);
-      const filterImages = image.filter(
-        (img) => Number(img.sub_category_id) === Number(subCatId)
+      const filterImages = images.filter(
+        (img: any) => Number(img.sub_category_id) === Number(subCatId)
       );
-      setfilterImage(filterImages);
+      setFilterImage(filterImages);
     } catch (error) {}
   };
 
@@ -194,10 +197,21 @@ const Home = () => {
     }
   };
 
+  // Handle Theme Changes
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    localStorage.setItem("aiImageProTheme", theme);
+  }, [theme]);
+
   return (
     <div>
       {/* Hero Section  */}
-      <div className="relative w-full min-h-[50vh] md:min-h-[60vh]">
+      <div className="relative w-full min-h-[60vh] md:h-[60vh]">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -211,7 +225,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-black opacity-30"></div>
 
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative flex flex-col justify-between">
           <header className="w-full md:w-4/5 mx-auto flex flex-wrap items-center justify-between p-4 text-white">
             {/* <h2 className="text-lg italic font-medium">AI Image Pro</h2> */}
 
@@ -223,8 +237,12 @@ const Home = () => {
             </NavLink>
 
             <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
-              {/* <h4 className="text-white font-medium text-lg">About</h4> */}
-              {/* <h4 className="text-white font-medium text-lg">Documentation</h4> */}
+              <Button
+                variant="secondary"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? <SunMoon /> : <Moon />}
+              </Button>
               <Button variant="secondary">
                 <NavLink to="/admin">Admin</NavLink>
               </Button>
@@ -232,7 +250,7 @@ const Home = () => {
           </header>
 
           {/* Search Box */}
-          <div className="mt-10 w-11/12 md:w-1/3 mx-auto">
+          <div className=" mt-30 w-11/12 md:w-1/3 mx-auto">
             <h3 className="text-xl md:text-3xl text-white font-semibold mb-5 text-center">
               The best free stock, AI photos, royalty-free images shared by
               admin.
@@ -263,7 +281,7 @@ const Home = () => {
       <div className="w-11/12 md:w-4/5 mx-auto mt-10 md:mt-20 mb-10 md:mb-20">
         {/* Category */}
         <ScrollArea>
-          <div className="flex gap-4 items-center justify-center overflow-x-scroll scrollbar-hide w-full">
+          <div className="flex gap-4 items-center justify-center w-full">
             {category.map((item) => (
               <button
                 onClick={() => handleCategoryClick(item.id)}
@@ -271,7 +289,7 @@ const Home = () => {
                 className={`text-md md:text-lg px-4 py-2 rounded-full cursor-pointer font-medium transition-all 
                 ${
                   activeCategoryId === item.id
-                    ? "bg-black text-white"
+                    ? "bg-black text-white dark:bg-neutral-800"
                     : "text-gray-700 bg-gray-50 hover:bg-gray-100"
                 }`}
               >
@@ -303,7 +321,7 @@ const Home = () => {
         </div>
 
         {/* Show the Images Grid */}
-        {loading ? (
+        {imageLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mx-auto mt-4">
             {Array.from({ length: 20 }).map((_, index) => (
               <div
@@ -326,7 +344,7 @@ const Home = () => {
               .map((image) => (
                 <div
                   key={image.id}
-                  className={`relative rounded-xl overflow-hidden cursor-pointer ${
+                  className={`relative rounded-xl overflow-hidden cursor-pointer group ${
                     image.size === "PORTRAIT"
                       ? "col-span-1 row-span-2"
                       : "col-span-1 row-span-1"
@@ -341,6 +359,19 @@ const Home = () => {
                         loading="lazy"
                       />
                     </AlertDialogTrigger>
+
+                    {/* Download Button (Initially Hidden) */}
+                    <Button
+                      onClick={() =>
+                        handleImageDownload(image.image_url, image.image_name)
+                      }
+                      className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-full flex items-center gap-2
+  opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md hover:shadow-lg hover:scale-105"
+                    >
+                      <Download className="w-5 h-5" />
+                      Download
+                    </Button>
+
                     <AlertDialogContent className="p-4">
                       <AlertDialogHeader>
                         <div className="flex justify-between">

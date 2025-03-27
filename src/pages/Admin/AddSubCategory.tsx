@@ -61,33 +61,6 @@ const AddSubCategory = () => {
     }
   };
 
-  // Add New Category
-  const addNewSubCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const url = `${baseUrl}/subCategory/create`;
-      const response = await axios.post(
-        url,
-        {
-          sub_category_name,
-          sub_category_description,
-          category_id: categoryId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("Response ", response);
-      toast.success(response.data.message);
-    } catch (error) {
-      console.log("Error ", error);
-    }
-  };
-
   // Get all Sub Category
   const getAllSubCategory = async () => {
     try {
@@ -110,6 +83,36 @@ const AddSubCategory = () => {
     getAllSubCategory();
   }, []);
 
+  // Add New Category
+  const addNewSubCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const url = `${baseUrl}/subCategory/create`;
+      const response = await axios.post(
+        url,
+        {
+          sub_category_name,
+          sub_category_description,
+          category_id: categoryId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Response ", response);
+      toast.success(response.data.message);
+      // Refresh Sub Category List after Addition
+      getAllSubCategory();
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.log("Error ", error);
+    }
+  };
+
   // Delete Sub Category
   const deleteSubCategory = async (id: any) => {
     try {
@@ -122,7 +125,12 @@ const AddSubCategory = () => {
       });
       console.log("Del Response ", response);
       toast.success(response.data.message);
-    } catch (error) {}
+      // Refresh Sub Category List after deletion
+      getAllSubCategory();
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.log("Error while Adding Sub Cat", error);
+    }
   };
 
   return (
@@ -170,7 +178,7 @@ const AddSubCategory = () => {
             onChange={(e) => setSubCategoryName(e.target.value)}
             id="image-title"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Enter image title"
+            placeholder="Enter Sub Category Name"
           />
         </div>
 
@@ -187,7 +195,7 @@ const AddSubCategory = () => {
             onChange={(e) => setSubCategoryDescription(e.target.value)}
             id="image-title"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Enter image title"
+            placeholder="Enter Sub Category Description"
           />
         </div>
         <Button type="submit">Add Sub Category</Button>

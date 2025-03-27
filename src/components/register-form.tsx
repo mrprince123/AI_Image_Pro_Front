@@ -6,8 +6,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { baseUrl } from "../App";
 import axios from "axios";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { register } from "../Redux/AuthSlice";
+// import { useDispatch } from "react-redux";
+// import { register } from "../Redux/AuthSlice";
 
 export function RegisterForm({
   className,
@@ -18,7 +18,7 @@ export function RegisterForm({
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   // Write Register function
   const handleRegister = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,9 +39,9 @@ export function RegisterForm({
         }
       );
       console.log("Response ", response);
-      dispatch(
-        register({ user: response.data.user, token: response.data.token })
-      );
+      // dispatch(
+      //   register({ user: response.data.user, token: response.data.token })
+      // );
       navigate("/login");
     } catch (error) {
       console.log("Error while Register ", error);

@@ -12,8 +12,8 @@ interface AuthState {
     isAuthenticated: boolean;
 }
 
-const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("token");
+const storedUser = localStorage.getItem("wallpaper_user");
+const storedToken = localStorage.getItem("wallpaper_token");
 
 
 // Define the Initial State
@@ -27,20 +27,23 @@ const authReducer = createSlice({
     name: "auth",
     initialState,
     reducers: {
+        // Register
         register: (state, actions: PayloadAction<{ user: User, token: string }>) => {
             state.token = actions.payload.token;
             state.user = actions.payload.user;
             state.isAuthenticated = true;
-            localStorage.setItem("user", JSON.stringify(state.user));
-            localStorage.setItem("token", state.token);
+            localStorage.setItem("wallpaper_user", JSON.stringify(state.user));
+            localStorage.setItem("wallpaper_token", state.token);
+            localStorage.setItem("wallpaper_login_time", Date.now().toString()); // Store login time
         },
         // Login
         login: (state, action: PayloadAction<{ user: User, token: string }>) => {
             state.user = action.payload.user;
             state.token = action.payload.token;
             state.isAuthenticated = true;
-            localStorage.setItem("user", JSON.stringify(state.user));
-            localStorage.setItem("token", state.token);
+            localStorage.setItem("wallpaper_user", JSON.stringify(state.user));
+            localStorage.setItem("wallpaper_token", state.token);
+            localStorage.setItem("wallpaper_login_time", Date.now().toString()); // Store login time
         },
 
         // Logout
@@ -48,8 +51,9 @@ const authReducer = createSlice({
             state.token = null;
             state.user = null;
             state.isAuthenticated = false;
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
+            localStorage.removeItem("wallpaper_user");
+            localStorage.removeItem("wallpaper_token");
+            localStorage.removeItem("wallpaper_login_time"); // Store login time
         },
     }
 });

@@ -12,7 +12,6 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 
-
 interface Category {
   id: string;
   category_name: string;
@@ -110,7 +109,20 @@ const AddImage = () => {
       });
       console.log("Response ", response);
       toast.success(response.data.message);
-    } catch (error) {
+
+      // ✅ Clear form fields after successful submission
+      setName("");
+      SetSize("");
+      setImageFile(null);
+      setSubCat("");
+
+      // Optionally reset file input
+      const fileInput = document.getElementById(
+        "fileInput"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+    } catch (error: any) {
+      toast.error(error.response.data.message);
       console.log("Error while adding the image", error);
     }
   };
@@ -120,7 +132,7 @@ const AddImage = () => {
   }, []);
 
   return (
-    <form onSubmit={handleImageSubmit} className="w-1/2">
+    <form onSubmit={handleImageSubmit} className="w-full md:w-1/2">
       <h2 className="text-xl font-semibold mb-4">Add Images</h2>
       <div className="mb-4">
         <label
@@ -239,8 +251,7 @@ const AddImage = () => {
         />
       </div>
       <Button type="submit">Upload Image</Button>
-            <Toaster position="top-right" reverseOrder={false} />
-      
+      <Toaster position="top-right" reverseOrder={false} />
     </form>
   );
 };

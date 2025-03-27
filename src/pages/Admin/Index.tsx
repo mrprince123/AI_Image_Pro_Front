@@ -5,12 +5,12 @@ import {
   Images,
   PackagePlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AddImage from "./AddImage";
 import AllImages from "./AllImages";
 import AddCategory from "./AddCategory";
 import AddSubCategory from "./AddSubCategory";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { baseUrl } from "../../App";
 import axios from "axios";
 import { useDispatch } from "react-redux";
@@ -28,14 +28,22 @@ const Index = () => {
     "allImages" | "addImages" | "addCategory" | "addSubCategory"
   >("allImages");
 
+  const [theme] = useState(
+    localStorage.getItem("aiImageProTheme") || "light"
+  );
+
   const [mobile, setMobile] = useState(false);
   const [profile, setProfile] = useState(false);
 
+  const profileRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Get the User Details
   const [user] = useState<User | null>(() => {
-    const user = localStorage.getItem("user");
+    const user = localStorage.getItem("wallpaper_user");
     return user ? JSON.parse(user) : null;
   });
 
@@ -46,6 +54,34 @@ const Index = () => {
   const toggleProfile = () => {
     setProfile((prev) => !prev);
   };
+
+  // Close Sidebar on Outside Click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setMobile(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close Profile Dropdown on Outside Click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfile(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Write Logout Function
   const handleLogout = async () => {
@@ -61,8 +97,24 @@ const Index = () => {
       dispatch(logout());
       toast.success(response.data.message);
       console.log("Logout Response ", response);
-    } catch (error) {}
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    }
   };
+
+
+ // Handle Theme Changes
+ useEffect(() => {
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+
+  localStorage.setItem("aiImageProTheme", theme);
+}, [theme]);
+
 
   return (
     <div className="antialiased bg-gray-50 dark:bg-gray-900">
@@ -74,7 +126,6 @@ const Index = () => {
               className="p-2 mr-2 text-gray-600 rounded-lg cursor-pointer md:hidden hover:text-gray-900 hover:bg-gray-100 focus:bg-gray-100 dark:focus:bg-gray-700 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               <AlignLeft />
-
               <span className="sr-only">Toggle sidebar</span>
             </button>
             <NavLink to="/" className="flex items-center gap-2 font-medium">
@@ -100,8 +151,8 @@ const Index = () => {
 
             {profile && (
               <div
-                className="z-50 my-4 w-56 text-base list-none bg-white  divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
-                id="dropdown"
+                ref={profileRef}
+                className="absolute right-0 top-12 z-50 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow-lg dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
               >
                 <div className="py-3 px-4">
                   <span className="block text-sm font-semibold text-gray-900 dark:text-white">
@@ -111,15 +162,11 @@ const Index = () => {
                     {user?.email}
                   </span>
                 </div>
-
-                <ul
-                  className="py-1 text-gray-700 dark:text-gray-300"
-                  aria-labelledby="dropdown"
-                >
+                <ul className="py-1 text-gray-700 dark:text-gray-300">
                   <li>
                     <button
                       onClick={() => handleLogout()}
-                      className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                      className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white w-full text-left"
                     >
                       Sign out
                     </button>
@@ -133,7 +180,7 @@ const Index = () => {
 
       {mobile && (
         <aside
-          // className="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+          ref={sidebarRef}
           className={`fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${
             mobile ? "translate-x-0" : "-translate-x-full"
           }`}

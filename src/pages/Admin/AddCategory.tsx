@@ -27,29 +27,6 @@ const AddCategory = () => {
 
   const [category, setCategory] = useState<Category[]>([]);
 
-  // Add New Category
-  const addNewCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const url = `${baseUrl}/category/create`;
-      const response = await axios.post(
-        url,
-        { category_name, category_description },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("Response ", response);
-      toast.success(response.data.message);
-    } catch (error) {
-      console.log("Error ", error);
-    }
-  };
-
   // Get all the Category
   const getAllCategory = async () => {
     try {
@@ -72,6 +49,32 @@ const AddCategory = () => {
     getAllCategory();
   }, []);
 
+  // Add New Category
+  const addNewCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const url = `${baseUrl}/category/create`;
+      const response = await axios.post(
+        url,
+        { category_name, category_description },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Response ", response);
+      toast.success(response.data.message);
+      // Refresh Category List after Adding
+      getAllCategory();
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.log("Error ", error);
+    }
+  };
+
   // Delete Category
   const deleteCategory = async (id: any) => {
     try {
@@ -84,7 +87,13 @@ const AddCategory = () => {
       });
       console.log("Del Response ", response);
       toast.success(response.data.message);
-    } catch (error) {}
+
+      // Refresh Category List after deletion
+      getAllCategory();
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.log("Error while Deleting Category ", error);
+    }
   };
 
   return (
@@ -106,7 +115,7 @@ const AddCategory = () => {
             onChange={(e) => setCategoryName(e.target.value)}
             id="image-title"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Enter image title"
+            placeholder="Enter Category Name"
           />
         </div>
 
@@ -123,7 +132,7 @@ const AddCategory = () => {
             onChange={(e) => setCategoryDescription(e.target.value)}
             id="image-title"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Enter image title"
+            placeholder="Enter Category Description"
           />
         </div>
         <Button type="submit">Add Category</Button>
@@ -132,7 +141,6 @@ const AddCategory = () => {
       {/* show all the Category */}
       <div className="mt-20">
         <h2 className="text-xl font-semibold mb-4">Add Category</h2>
-
         <Table>
           <TableCaption>A list of your all category.</TableCaption>
           <TableHeader>
@@ -145,7 +153,7 @@ const AddCategory = () => {
           </TableHeader>
           <TableBody>
             {category.map((item) => (
-              <TableRow>
+              <TableRow key={item.id}>
                 <TableCell className="text-right">{item.id}</TableCell>
                 <TableCell className="font-medium">
                   {item.category_name}

@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../../App";
 import { Button } from "../../components/ui/button";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Image {
   id: number;
@@ -24,7 +25,7 @@ const AllImages = () => {
         },
         withCredentials: true,
       });
-      console.log("Response", response);
+      console.log("Getting All Image", response);
       setImage(response.data.data);
     } catch (error) {
       console.log("Error while Getting all images", error);
@@ -46,9 +47,12 @@ const AllImages = () => {
         withCredentials: true,
       });
       console.log("Response", response);
-      setImage(response.data.data);
-    } catch (error) {
-      console.log("Error while Deleting", error);
+      toast.success(response.data.message);
+      // Refresh the Image List
+      getAllImages();
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.log("Error while Deleting Image", error);
     }
   };
 
@@ -59,7 +63,7 @@ const AllImages = () => {
         {image.map((item) => (
           <div
             key={item.id}
-            className="border-2 border-dashed border-gray-300 rounded-lg"
+            className="border p-2 border-gray-300 dark:border-gray-700 rounded-lg"
           >
             <img
               src={item.image_url}
@@ -67,9 +71,8 @@ const AllImages = () => {
               className="rounded-lg"
             />
             <div className="p-4">
-              <h4>{item.image_name}</h4>
+              <h4 className="mb-2 font-medium">{item.image_name}</h4>
               <div className="flex justify-end gap-2">
-                <Button>Edit</Button>
                 <Button
                   onClick={() => deleteImage(item.id)}
                   variant="destructive"
@@ -81,6 +84,7 @@ const AllImages = () => {
           </div>
         ))}
       </div>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };

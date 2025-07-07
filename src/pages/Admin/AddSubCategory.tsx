@@ -23,16 +23,16 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 
 interface Category {
-  id: number;
+  _id: string;
   category_name: string;
   category_description: string;
 }
 
 interface SubCategory {
-  id: number;
+  _id: string;
   sub_category_name: string;
   sub_category_description: string;
-  category_id: number;
+  category_id: string;
 }
 
 const AddSubCategory = () => {
@@ -105,6 +105,9 @@ const AddSubCategory = () => {
 
       console.log("Response ", response);
       toast.success(response.data.message);
+      setSubCategoryName("");
+      setSubCategoryDescription("");
+
       // Refresh Sub Category List after Addition
       getAllSubCategory();
     } catch (error: any) {
@@ -152,7 +155,7 @@ const AddSubCategory = () => {
             <SelectContent>
               {category.length > 0 ? (
                 category.map((item) => (
-                  <SelectItem key={item.id} value={String(item.id)}>
+                  <SelectItem key={item._id} value={String(item._id)}>
                     {item.category_name}
                   </SelectItem>
                 ))
@@ -216,19 +219,19 @@ const AddSubCategory = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {subCategory.map((item) => (
-              <TableRow>
-                <TableCell className="text-right">{item.id}</TableCell>
+            {subCategory.map((item, index) => (
+              <TableRow key={item._id}>
+                <TableCell className="text-right">{index + 1}</TableCell>
                 <TableCell className="font-medium">
                   {item.sub_category_name}
                 </TableCell>
                 <TableCell>{item.sub_category_description}</TableCell>
                 <TableCell>
-                  {category.find((cat) => cat.id === item.category_id)
+                  {category.find((cat) => cat._id === item.category_id)
                     ?.category_name || "Unknown"}
                 </TableCell>
                 <TableCell>
-                  <button onClick={() => deleteSubCategory(item.id)}>
+                  <button onClick={() => deleteSubCategory(item._id)}>
                     <Trash2 />
                   </button>
                 </TableCell>

@@ -13,13 +13,13 @@ import { Button } from "../../components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 
 interface Category {
-  id: string;
+  _id: string;
   category_name: string;
   category_description: string;
 }
 
 interface SubCategory {
-  id: string;
+  _id: string;
   sub_category_name: string;
   sub_category_description: string;
   category_id: string;
@@ -71,7 +71,7 @@ const AddImage = () => {
 
   // Handle Category Change
   const handleCategoryChange = (value: string) => {
-    setSubCat(""); // Reset Subcategory
+    setSubCat("");
     getAllSubCategory(value);
   };
 
@@ -147,7 +147,7 @@ const AddImage = () => {
           </SelectTrigger>
           <SelectContent>
             {category.map((item) => (
-              <SelectItem key={item.id} value={String(item.id)}>
+              <SelectItem key={item._id} value={String(item._id)}>
                 {item.category_name}
               </SelectItem>
             ))}
@@ -169,7 +169,7 @@ const AddImage = () => {
           <SelectContent>
             {subCategory.length > 0 ? (
               subCategory.map((item) => (
-                <SelectItem key={item.id} value={String(item.id)}>
+                <SelectItem key={item._id} value={String(item._id)}>
                   {item.sub_category_name}
                 </SelectItem>
               ))

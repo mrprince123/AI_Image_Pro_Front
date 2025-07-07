@@ -16,7 +16,7 @@ import axios from "axios";
 import { Trash2 } from "lucide-react";
 
 interface Category {
-  id: number;
+  _id: string;
   category_name: string;
   category_description: string;
 }
@@ -24,7 +24,6 @@ interface Category {
 const AddCategory = () => {
   const [category_name, setCategoryName] = useState<string>("");
   const [category_description, setCategoryDescription] = useState<string>("");
-
   const [category, setCategory] = useState<Category[]>([]);
 
   // Get all the Category
@@ -67,6 +66,8 @@ const AddCategory = () => {
 
       console.log("Response ", response);
       toast.success(response.data.message);
+      setCategoryName("");
+      setCategoryDescription("");
       // Refresh Category List after Adding
       getAllCategory();
     } catch (error: any) {
@@ -152,15 +153,15 @@ const AddCategory = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {category.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="text-right">{item.id}</TableCell>
+            {category.map((item, index) => (
+              <TableRow key={item._id}>
+                <TableCell className="text-right">{index + 1}</TableCell>
                 <TableCell className="font-medium">
                   {item.category_name}
                 </TableCell>
                 <TableCell>{item.category_description}</TableCell>
                 <TableCell>
-                  <button onClick={() => deleteCategory(item.id)}>
+                  <button onClick={() => deleteCategory(item._id)}>
                     <Trash2 />
                   </button>
                 </TableCell>

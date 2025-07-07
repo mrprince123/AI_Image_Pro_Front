@@ -5,7 +5,7 @@ import { Button } from "../../components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 
 interface Image {
-  id: number;
+  _id: number;
   image_name: string;
   image_url: string;
   image_alt: string;
@@ -62,7 +62,7 @@ const AllImages = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {image.map((item) => (
           <div
-            key={item.id}
+            key={item._id}
             className="border p-2 border-gray-300 dark:border-gray-700 rounded-lg"
           >
             <img
@@ -74,7 +74,7 @@ const AllImages = () => {
               <h4 className="mb-2 font-medium">{item.image_name}</h4>
               <div className="flex justify-end gap-2">
                 <Button
-                  onClick={() => deleteImage(item.id)}
+                  onClick={() => deleteImage(item._id)}
                   variant="destructive"
                 >
                   Delete

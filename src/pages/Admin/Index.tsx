@@ -18,7 +18,7 @@ import { logout } from "../../Redux/AuthSlice";
 import toast, { Toaster } from "react-hot-toast";
 
 interface User {
-  id: number;
+  _id: number;
   name: string;
   email: string;
 }
@@ -28,9 +28,7 @@ const Index = () => {
     "allImages" | "addImages" | "addCategory" | "addSubCategory"
   >("allImages");
 
-  const [theme] = useState(
-    localStorage.getItem("aiImageProTheme") || "light"
-  );
+  const [theme] = useState(localStorage.getItem("aiImageProTheme") || "light");
 
   const [mobile, setMobile] = useState(false);
   const [profile, setProfile] = useState(false);
@@ -103,18 +101,16 @@ const Index = () => {
     }
   };
 
+  // Handle Theme Changes
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
 
- // Handle Theme Changes
- useEffect(() => {
-  if (theme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
-
-  localStorage.setItem("aiImageProTheme", theme);
-}, [theme]);
-
+    localStorage.setItem("aiImageProTheme", theme);
+  }, [theme]);
 
   return (
     <div className="antialiased bg-gray-50 dark:bg-gray-900">

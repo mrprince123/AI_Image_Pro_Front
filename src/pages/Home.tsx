@@ -28,7 +28,7 @@ import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 
 interface Image {
-  id: string;
+  _id: string;
   image_name: string;
   image_url: string;
   image_alt: string;
@@ -37,13 +37,13 @@ interface Image {
 }
 
 interface Category {
-  id: string;
+  _id: string;
   category_name: string;
   category_description: string;
 }
 
 interface SubCategory {
-  id: string;
+  _id: string;
   sub_category_name: string;
   sub_category_description: string;
   category_id: string;
@@ -106,7 +106,11 @@ const Home = () => {
         withCredentials: true,
       });
       console.log("Response ", response);
-      setCategory(response.data.data);
+
+      const categories = response.data.data;
+      setCategory(categories);
+
+      
     } catch (error) {
       console.log("Error Response while Category", error);
     }
@@ -135,7 +139,7 @@ const Home = () => {
     try {
       const subCategoryIds = subCategory
         .filter((sub) => sub.category_id == categoryId)
-        .map((sub) => sub.id);
+        .map((sub) => sub._id);
 
       const filterImages = images.filter((img: any) =>
         subCategoryIds.includes(img.sub_category_id)
@@ -153,19 +157,18 @@ const Home = () => {
   }, [subCategory]);
 
   // Handle Category Click
-  const handleCategoryClick = (categoryId: any) => {
+  const handleCategoryClick = async (categoryId: any) => {
     setActiveCategoryId(categoryId); // Mark the clicked category as active
     setSelectedCategoryId(categoryId); // Store selected category
-    getAllSubCategory(categoryId); // This updates subCategory state
+    await getAllSubCategory(categoryId); // This updates subCategory state
   };
 
   // Handle Sub Category Filter
-  const handleSubCategoryFilter = (subCatId: any) => {
+  const handleSubCategoryFilter = (subCatId: string | number) => {
     try {
-      console.log("Working this Funciton");
       console.log("Cat Id ", subCatId);
       const filterImages = images.filter(
-        (img: any) => Number(img.sub_category_id) === Number(subCatId)
+        (img: any) => String(img.sub_category_id) === String(subCatId)
       );
       setFilterImage(filterImages);
     } catch (error) {}
@@ -284,11 +287,11 @@ const Home = () => {
           <div className="flex gap-4 items-center justify-center w-full">
             {category.map((item) => (
               <button
-                onClick={() => handleCategoryClick(item.id)}
-                key={item.id}
+                onClick={() => handleCategoryClick(item._id)}
+                key={item._id}
                 className={`text-md md:text-lg px-4 py-2 rounded-full cursor-pointer font-medium transition-all 
                 ${
-                  activeCategoryId === item.id
+                  activeCategoryId === item._id
                     ? "bg-black text-white dark:bg-neutral-800"
                     : "text-gray-700 bg-gray-50 hover:bg-gray-100"
                 }`}
@@ -312,7 +315,7 @@ const Home = () => {
             </SelectTrigger>
             <SelectContent className="w-full md:w-auto">
               {subCategory.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
+                <SelectItem key={item._id} value={item._id}>
                   {item.sub_category_name}
                 </SelectItem>
               ))}
@@ -343,7 +346,7 @@ const Home = () => {
               .sort(() => Math.random() - 0.5)
               .map((image) => (
                 <div
-                  key={image.id}
+                  key={image._id}
                   className={`relative rounded-xl overflow-hidden cursor-pointer group ${
                     image.size === "PORTRAIT"
                       ? "col-span-1 row-span-2"

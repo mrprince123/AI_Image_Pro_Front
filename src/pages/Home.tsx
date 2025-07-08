@@ -78,7 +78,7 @@ const Home = () => {
 
   useEffect(() => {
     getAllCategory();
-    getAllSubCategory("1");
+    getAllSubCategory("686be21c7bd9534c490b6309");
   }, []);
 
   useEffect(() => {

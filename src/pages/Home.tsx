@@ -109,8 +109,6 @@ const Home = () => {
 
       const categories = response.data.data;
       setCategory(categories);
-
-      
     } catch (error) {
       console.log("Error Response while Category", error);
     }
@@ -241,12 +239,13 @@ const Home = () => {
 
             <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
               <Button
+                className="cursor-pointer"
                 variant="secondary"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
                 {theme === "dark" ? <SunMoon /> : <Moon />}
               </Button>
-              <Button variant="secondary">
+              <Button variant="secondary" className="cursor-pointer">
                 <NavLink to="/admin">Admin</NavLink>
               </Button>
             </div>
@@ -271,7 +270,7 @@ const Home = () => {
               />
               <Button
                 onClick={() => handleImageFilter()}
-                className="bg-gray-50 p-4 md:p-6 rounded-lg"
+                className="bg-gray-50 p-4 md:p-6 rounded-lg cursor-pointer"
               >
                 <Search className="text-gray-600" />
               </Button>

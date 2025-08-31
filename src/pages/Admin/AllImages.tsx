@@ -74,6 +74,7 @@ const AllImages = () => {
               <h4 className="mb-2 font-medium">{item.image_name}</h4>
               <div className="flex justify-end gap-2">
                 <Button
+                  className="cursor-pointer"
                   onClick={() => deleteImage(item._id)}
                   variant="destructive"
                 >

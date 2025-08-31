@@ -42,12 +42,11 @@ export function LoginForm({
 
       console.log("Response ", response);
 
-    
       // Call Redux
       dispatch(login({ user: response.data.data, token: response.data.token }));
 
       // Then Redirect
-      navigate("/");
+      navigate("/admin");
     } catch (error) {
       console.log("Error while Login ", error);
     }

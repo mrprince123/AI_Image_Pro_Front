@@ -191,7 +191,7 @@ const AddImage = () => {
         </label>
         <Select value={size} onValueChange={SetSize}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Sub category" />
+            <SelectValue placeholder="Image Size" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="PORTRAIT">Portrait</SelectItem>
@@ -250,7 +250,7 @@ const AddImage = () => {
           className="mt-1 block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 dark:bg-gray-700 dark:border-gray-600"
         />
       </div>
-      <Button type="submit">Upload Image</Button>
+      <Button className="cursor-pointer" type="submit">Upload Image</Button>
       <Toaster position="top-right" reverseOrder={false} />
     </form>
   );

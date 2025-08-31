@@ -201,7 +201,7 @@ const AddSubCategory = () => {
             placeholder="Enter Sub Category Description"
           />
         </div>
-        <Button type="submit">Add Sub Category</Button>
+        <Button className="cursor-pointer" type="submit">Add Sub Category</Button>
       </form>
 
       {/* show all the Category */}
